@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
+
+	<Properties>
+		<property name="LOG_FILE_PATH">D:\Monitoring</property>
+	</Properties>
+
 	<Appenders>
 		<Console name="Console" target="SYSTEM_OUT">
 			<PatternLayout
@@ -8,8 +13,8 @@
 
 		<RollingRandomAccessFile
 			name="JkstatusLoggerMobileAutoway"
-			fileName="${sys:logdir}/logs/JkstatusLogger-MobileAutoway.log"
-			filePattern="${sys:logdir}/logs/$${date:yyyy-MM-dd}/JkstatusLogger-MobileAutoway.%d{yyyyMMdd}-%i.log.zip"
+			fileName="${LOG_FILE_PATH}/logs/JkstatusLogger-MobileAutoway.log"
+			filePattern="${LOG_FILE_PATH}/logs/$${date:yyyy-MM-dd}/JkstatusLogger-MobileAutoway.%d{yyyyMMdd}-%i.log.zip"
 			immediateFlush="false" append="true">
 			<PatternLayout pattern="%m%n" />
 			<Policies>
@@ -29,11 +34,12 @@
 		<Root level="debug">
 			<AppenderRef ref="Console" />
 		</Root>
-		
-		<logger name="JkstatusLoggerMobileAutoway" level="trace" additivity="false">
+
+		<logger name="JkstatusLoggerMobileAutoway" level="trace"
+			additivity="false">
 			<appender-ref ref="Async-JkstatusLoggerMobileAutoway" />
 		</logger>
-		
+
 	</Loggers>
 
 </Configuration>
