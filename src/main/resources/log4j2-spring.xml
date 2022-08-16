@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout
+				pattern="%style{%d{ISO8601}}{black} %highlight{%-5level }[%style{%t}{bright,blue}] %style{%C{1.}}{bright,yellow}: %msg%n%throwable" />
+		</Console>
+
+		<RollingRandomAccessFile
+			name="JkstatusLoggerMobileAutoway"
+			fileName="${sys:logdir}/logs/JkstatusLogger-MobileAutoway.log"
+			filePattern="${sys:logdir}/logs/$${date:yyyy-MM-dd}/JkstatusLogger-MobileAutoway.%d{yyyyMMdd}-%i.log.zip"
+			immediateFlush="false" append="true">
+			<PatternLayout pattern="%m%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
+				<SizeBasedTriggeringPolicy size="50 MB" />
+			</Policies>
+		</RollingRandomAccessFile>
+
+		<Async name="Async-JkstatusLoggerMobileAutoway">
+			<AppenderRef ref="JkstatusLoggerMobileAutoway" />
+		</Async>
+	</Appenders>
+
+	<Loggers>
+
+		<Root level="debug">
+			<AppenderRef ref="Console" />
+		</Root>
+		
+		<logger name="JkstatusLoggerMobileAutoway" level="trace" additivity="false">
+			<appender-ref ref="Async-JkstatusLoggerMobileAutoway" />
+		</logger>
+		
+	</Loggers>
+
+</Configuration>
