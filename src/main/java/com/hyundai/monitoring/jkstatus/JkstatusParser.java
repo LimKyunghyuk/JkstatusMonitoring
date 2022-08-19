@@ -1,15 +1,15 @@
 package com.hyundai.monitoring.jkstatus;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.logging.log4j.LogManager;
@@ -23,7 +23,8 @@ public class JkstatusParser {
 
 	private static Logger logger = LogManager.getLogger(JkstatusParser.class);
 	public final static int TIME_OUT = 5000;
-
+	public final static String DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss"; // 2022-08-19 00:47:46
+	
 	JkstatusVo[] jkstatusVO;
 
 	PoolingHttpClientConnectionManager pool;
@@ -91,6 +92,14 @@ public class JkstatusParser {
 		
 		JSONObject json = new JSONObject();
 		
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATETIME_FORMAT);
+		LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+		String formatedNow = now.format(formatter);
+		json.put("occurDatetime", formatedNow);
+		json.put("type", "jkstatus");
+		json.put("ms", TIME_OUT);
+		
+		
 		HttpGet httpGet = new HttpGet(url);
 		
 		RequestConfig requestConfig = RequestConfig.custom()
@@ -106,6 +115,7 @@ public class JkstatusParser {
 		}
 			
 		try {
+			long start = System.currentTimeMillis();
 			CloseableHttpResponse httpResponse = httpClient.execute(httpGet);
 			
 			if(200 != httpResponse.getStatusLine().getStatusCode()) {
@@ -138,6 +148,9 @@ public class JkstatusParser {
 			}
 			reader.close();
 
+			long end = System.currentTimeMillis();
+			json.put("ms", end - start);
+			
 		} catch (Exception e) {
 			logger.error(e.toString());
 		}
