@@ -13,8 +13,8 @@ public class JkstatusLogger {
 	}
 	public void start() {
 		
-		logger.debug("hello!");
-		jkstatusParser.parserJkstatus("http://10.14.81.161/jkstatus?cmd=list&w=server&mime=prop");
+		String url = "http://127.0.0.1/jkstatus?cmd=list&w=server&mime=prop";
+		logger.trace(jkstatusParser.parserJkstatus(url));
 		
 	}
 }
