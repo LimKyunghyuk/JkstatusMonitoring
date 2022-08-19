@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -16,6 +17,8 @@ import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import net.minidev.json.JSONObject;
+
 public class JkstatusParser {
 
 	private static Logger logger = LogManager.getLogger(JkstatusParser.class);
@@ -23,6 +26,13 @@ public class JkstatusParser {
 
 	JkstatusVo[] jkstatusVO;
 
+	PoolingHttpClientConnectionManager pool;
+	CloseableHttpClient httpClient;
+	
+	JkstatusParser(){
+		pool = new PoolingHttpClientConnectionManager();	
+	}
+	
 	private void init(String[] serversName) {
 
 		jkstatusVO = new JkstatusVo[serversName.length];
@@ -75,22 +85,32 @@ public class JkstatusParser {
 		return jkstatusVO;
 	}
 
-	PoolingHttpClientConnectionManager pool = new PoolingHttpClientConnectionManager();
-	CloseableHttpClient httpClient;
 	
-	public void parserJkstatus(String url) {
-				
+	
+	public String parserJkstatus(String url) {
+		
+		JSONObject json = new JSONObject();
+		
 		HttpGet httpGet = new HttpGet(url);
 		
+		RequestConfig requestConfig = RequestConfig.custom()
+	                .setSocketTimeout(TIME_OUT)
+	                .setConnectTimeout(TIME_OUT)
+	                .setConnectionRequestTimeout(TIME_OUT)
+	                .build();
+		httpGet.setConfig(requestConfig);
+	        
 		if(httpClient == null) {
-			logger.debug(">>> httpClient init");
+			logger.debug("httpClient init pool");
 			httpClient = HttpClients.custom().setConnectionManager(pool).build();	
 		}
 			
-
 		try {
 			CloseableHttpResponse httpResponse = httpClient.execute(httpGet);
-			System.out.println(httpResponse.getStatusLine().getStatusCode());
+			
+			if(200 != httpResponse.getStatusLine().getStatusCode()) {
+				return json.toString();
+			}
 			
 			BufferedReader reader = new BufferedReader(new InputStreamReader(httpResponse.getEntity().getContent()));
 			
@@ -98,38 +118,42 @@ public class JkstatusParser {
 			StringBuffer response = new StringBuffer();
 			while((inputLine = reader.readLine()) != null){
 				response.append(inputLine);
-				System.out.println(inputLine);
+				
+				String[] pair = inputLine.split("=");
+				
+				if(pair != null && pair.length != 0) {
+					
+					if(pair.length == 1) {
+						json.put(pair[0], "");
+					}else {
+						
+						try {
+							Long number = Long.parseLong(pair[1]); 
+							json.put(pair[0], number);		
+						}catch(NumberFormatException e) {
+							json.put(pair[0], pair[1]);
+						}
+					}
+				}
 			}
 			reader.close();
-			System.out.println(response.toString());
-			
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e.toString());
 		}
 		
+		return json.toString();
 		
 	}
-
+	
 	public static void main(String[] args) throws Exception {
 
 		org.apache.logging.log4j.core.config.Configurator.setLevel(JkstatusParser.class,
 				org.apache.logging.log4j.Level.DEBUG);
 
 		long srartTime = System.currentTimeMillis();
-		JkstatusParser a = new JkstatusParser();
-		String[] serverName = { "server1", "server2", "server3", "server4", "server5", "server6" };
-//		JkstatusVo[] JkstatusList = a.parserJkstatus("http://10.14.81.161/jkstatus?cmd=list&w=server&mime=prop",
-//				serverName);
-//
-//		for (JkstatusVo Jkstatus : JkstatusList) {
-//			logger.debug(Jkstatus);
-//		}
-
-		for(int i = 0 ;i<3; i++) 
-		a.parserJkstatus("http://10.14.81.161/jkstatus?cmd=list&w=server&mime=prop");
-
+		JkstatusParser sample = new JkstatusParser();
+		logger.debug(sample.parserJkstatus("http://127.0.0.1/jkstatus?cmd=list&w=server&mime=prop"));
 				
 		long endTime = System.currentTimeMillis();
 
