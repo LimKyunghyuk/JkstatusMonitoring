@@ -11,7 +11,7 @@
 		</Console>
 
 		<RollingRandomAccessFile
-			name="JkstatusLoggerMobileAutoway"
+			name="elkLogger"
 			fileName="${LOG_FILE_PATH}/logs/JkstatusLogger-MobileAutoway.log"
 			filePattern="${LOG_FILE_PATH}/logs/$${date:yyyy-MM-dd}/JkstatusLogger-MobileAutoway.%d{yyyyMMdd}-%i.log.zip"
 			immediateFlush="false" append="true">
@@ -23,8 +23,8 @@
 			</Policies>
 		</RollingRandomAccessFile>
 
-		<Async name="Async-JkstatusLoggerMobileAutoway">
-			<AppenderRef ref="JkstatusLoggerMobileAutoway" />
+		<Async name="Async-elkLogger">
+			<AppenderRef ref="elkLogger" />
 		</Async>
 	</Appenders>
 
@@ -34,9 +34,9 @@
 			<AppenderRef ref="Console" />
 		</Root>
 
-		<logger name="JkstatusLoggerMobileAutoway" level="trace"
+		<logger name="elkLogger" level="trace"
 			additivity="false">
-			<appender-ref ref="Async-JkstatusLoggerMobileAutoway" />
+			<appender-ref ref="Async-elkLogger" />
 		</logger>
 
 	</Loggers>

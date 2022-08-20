@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <properties>
+	<jkstatus-url>
+		http://127.0.0.1/jkstatus?cmd=list&amp;w=server&amp;mime=prop	
+	</jkstatus-url>
+	
 	<exception>
 		<pair>
 			<keyword>dserver</keyword>

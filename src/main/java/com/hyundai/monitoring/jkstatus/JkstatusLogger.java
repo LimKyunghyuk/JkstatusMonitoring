@@ -1,5 +1,6 @@
 package com.hyundai.monitoring.jkstatus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.configuration2.HierarchicalConfiguration;
@@ -13,16 +14,21 @@ import org.apache.logging.log4j.Logger;
 
 public class JkstatusLogger {
 
-	private static Logger logger = LogManager.getLogger("JkstatusLoggerMobileAutoway");
-	JkstatusParser jkstatusParser;
+	private static Logger elkLogger = LogManager.getLogger("elkLogger");
+	private static Logger logger = LogManager.getLogger(JkstatusLogger.class);
+	
 	final static String XML_NAME = "jkstatus.xml";
+	JkstatusParser jkstatusParser;
+	
 	private XMLConfiguration config;
 
 	public JkstatusLogger() {
-		jkstatusParser = new JkstatusParser();
-	}
-	public void start() {
 		
+		initConfiguration();
+		initJkstatusParser();
+	}
+	
+	private void initConfiguration() {
 		Parameters params = new Parameters();
 		FileBasedConfigurationBuilder<XMLConfiguration> builder = new FileBasedConfigurationBuilder<XMLConfiguration>(
 				XMLConfiguration.class).configure(params.xml().setFileName(XML_NAME));
@@ -30,31 +36,45 @@ public class JkstatusLogger {
 		try {
 			config = builder.getConfiguration();
 		} catch (ConfigurationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	private void initJkstatusParser() {
+		jkstatusParser = new JkstatusParser();
+	}
+	
+	public void start() {
+		
+		String url = config.getString("jkstatus-url");
+		logger.debug("jkstatus-url>" + url);
 
-		List<HierarchicalConfiguration<ImmutableNode>> wasList = config.configurationsAt("exception.pair");
-		for(HierarchicalConfiguration<ImmutableNode> service : wasList) {
-			
-			System.out.println(">"+service.getString("keyword"));
+		// 예외 키워드 지정
+		List<String> exceptionList = new ArrayList<String>();  
+		List<HierarchicalConfiguration<ImmutableNode>> exceptionListInConfig = config.configurationsAt("exception.pair");
+		for(HierarchicalConfiguration<ImmutableNode>  exceptionInConfig: exceptionListInConfig) {
+			exceptionList.add(exceptionInConfig.getString("keyword"));
 		}
 		
-		
-		String url = "http://127.0.0.1/jkstatus?cmd=list&w=server&mime=prop";
-		System.out.println(jkstatusParser.getJsonAsString(url, null));
-		System.out.println("================");
+		String log = jkstatusParser.getJsonAsString(url, exceptionList);
+		logger.debug(log);
+		elkLogger.trace(log);
 	}
 	
 	public static void main(String[] args) {
 		
-		System.out.println("!");
 		org.apache.logging.log4j.core.config.Configurator.setLevel(JkstatusLogger.class,
 				org.apache.logging.log4j.Level.DEBUG);
+		org.apache.logging.log4j.core.config.Configurator.setLevel(JkstatusParser.class,
+				org.apache.logging.log4j.Level.DEBUG);
 
+		long srartTime = System.currentTimeMillis();
 		
-		JkstatusLogger j = new JkstatusLogger();
-		j.start();
-		System.out.print("-end-");
+		JkstatusLogger jkstatusLogger = new JkstatusLogger();
+		jkstatusLogger.start();
+		
+		long endTime = System.currentTimeMillis();
+		logger.debug("Done : " + (endTime - srartTime) + "ms");
+		
 	}
 }

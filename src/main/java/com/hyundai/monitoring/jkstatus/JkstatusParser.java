@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -88,8 +89,8 @@ public class JkstatusParser {
 
 	
 	
-	public String getJsonAsString(String url, String[] exceptionList) {
-		
+	public String getJsonAsString(String url, List<String> exceptionList) {
+
 		JSONObject json = new JSONObject();
 		
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATETIME_FORMAT);
@@ -190,26 +191,7 @@ public class JkstatusParser {
 			logger.error(e.toString());
 		}
 		
-		
 		return json.toString();
 		
 	}
-	
-	public static void main(String[] args) throws Exception {
-
-		org.apache.logging.log4j.core.config.Configurator.setLevel(JkstatusParser.class,
-				org.apache.logging.log4j.Level.DEBUG);
-
-		long srartTime = System.currentTimeMillis();
-		JkstatusParser sample = new JkstatusParser();
-		
-		String [] exceptionList = {"dautowayauth", "dappstoreapp", "dappstore", "dportal", "dserver"};
-		
-		logger.debug(sample.getJsonAsString("http://127.0.0.1/jkstatus?cmd=list&w=server&mime=prop", exceptionList));
-				
-		long endTime = System.currentTimeMillis();
-
-		logger.debug("Done : " + (endTime - srartTime) + "ms");
-	}
-
 }
