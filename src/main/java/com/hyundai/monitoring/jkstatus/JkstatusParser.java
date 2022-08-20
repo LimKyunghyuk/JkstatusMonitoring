@@ -25,7 +25,7 @@ public class JkstatusParser {
 	public final static int TIME_OUT = 5000;
 	public final static String DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss"; // 2022-08-19 00:47:46
 	
-	JkstatusVo[] jkstatusVO;
+	Jkstatus[] jkstatusVO;
 
 	PoolingHttpClientConnectionManager pool;
 	CloseableHttpClient httpClient;
@@ -36,10 +36,10 @@ public class JkstatusParser {
 	
 	private void init(String[] serversName) {
 
-		jkstatusVO = new JkstatusVo[serversName.length];
+		jkstatusVO = new Jkstatus[serversName.length];
 
 		for (int i = 0; i < serversName.length; i++) {
-			jkstatusVO[i] = new JkstatusVo();
+			jkstatusVO[i] = new Jkstatus();
 			jkstatusVO[i].setName(serversName[i]);
 		}
 		
@@ -48,7 +48,7 @@ public class JkstatusParser {
 		
 	}
 
-	public JkstatusVo[] parserJkstatus(String url, String[] serversName) {
+	public Jkstatus[] getJkstatus(String url, String[] serversName) {
 
 		init(serversName);
 
@@ -88,7 +88,7 @@ public class JkstatusParser {
 
 	
 	
-	public String parserJkstatus(String url) {
+	public String getJsonAsString(String url, String[] exceptionList) {
 		
 		JSONObject json = new JSONObject();
 		
@@ -126,27 +126,62 @@ public class JkstatusParser {
 			
 			String inputLine;
 			StringBuffer response = new StringBuffer();
+			
+			String[] pair;
+			
+			String keyword = "";
+			Object value = "";
+			
+			long cnt = 0L; 
+			
 			while((inputLine = reader.readLine()) != null){
 				response.append(inputLine);
 				
-				String[] pair = inputLine.split("=");
+				pair = inputLine.split("=");
 				
 				if(pair != null && pair.length != 0) {
 					
-					if(pair.length == 1) {
-						json.put(pair[0], "");
+					if(pair.length == 1) { 					// 값이 없으면
+						keyword = pair[0];
+						value = "";
 					}else {
 						
-						try {
-							Long number = Long.parseLong(pair[1]); 
-							json.put(pair[0], number);		
-						}catch(NumberFormatException e) {
-							json.put(pair[0], pair[1]);
+						try {								// 값이 숫자면
+							keyword = pair[0];
+							value = Long.parseLong(pair[1]);
+						}catch(NumberFormatException e) {	// 값이 숫자가 아니라면
+							keyword = pair[0];
+							value = pair[1];
+						}
+					}
+					
+					if(exceptionList == null) {
+						json.put(keyword, value);
+						logger.debug(cnt + ": put(" + keyword + ", "+ value+")");
+						cnt++;
+					}else {
+						
+						Boolean isExistence = false;
+						
+						for(String exception : exceptionList) {
+							
+							if(keyword.contains(exception)) {
+								isExistence = true;
+								break;
+							}
+						}
+						
+						if(!isExistence) {
+							json.put(keyword, value);
+							logger.debug(cnt + ": put(" + keyword + ", "+ value+")");
+							cnt++;
 						}
 					}
 				}
 			}
+			
 			reader.close();
+			logger.debug(" count : " + cnt);
 
 			long end = System.currentTimeMillis();
 			json.put("ms", end - start);
@@ -154,6 +189,7 @@ public class JkstatusParser {
 		} catch (Exception e) {
 			logger.error(e.toString());
 		}
+		
 		
 		return json.toString();
 		
@@ -166,7 +202,10 @@ public class JkstatusParser {
 
 		long srartTime = System.currentTimeMillis();
 		JkstatusParser sample = new JkstatusParser();
-		logger.debug(sample.parserJkstatus("http://127.0.0.1/jkstatus?cmd=list&w=server&mime=prop"));
+		
+		String [] exceptionList = {"dautowayauth", "dappstoreapp", "dappstore", "dportal", "dserver"};
+		
+		logger.debug(sample.getJsonAsString("http://127.0.0.1/jkstatus?cmd=list&w=server&mime=prop", exceptionList));
 				
 		long endTime = System.currentTimeMillis();
 

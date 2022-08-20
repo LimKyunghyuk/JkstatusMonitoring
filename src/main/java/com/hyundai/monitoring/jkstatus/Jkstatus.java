@@ -1,6 +1,6 @@
 package com.hyundai.monitoring.jkstatus;
 
-public class JkstatusVo {
+public class Jkstatus {
 
 	private final Long MAX_VALUE = 999L;
 	
@@ -12,7 +12,7 @@ public class JkstatusVo {
 	private Long con;
 	private Long maxCon;
 
-	public JkstatusVo() {
+	public Jkstatus() {
 		this.name = "";
 		this.act = "TIME_OUT";
 		this.state = "TIME_OUT";
