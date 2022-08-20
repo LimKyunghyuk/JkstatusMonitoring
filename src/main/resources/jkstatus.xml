@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<properties>
+	<exception>
+		<pair>
+			<keyword>dserver</keyword>
+		</pair>
+		<pair>
+			<keyword>dportal</keyword>
+		</pair>
+		<pair>
+			<keyword>dappstore</keyword>
+		</pair>
+		<pair>
+			<keyword>dappstoreapp</keyword>
+		</pair>
+		<pair>
+			<keyword>dautowayauth</keyword>
+		</pair>
+	</exception>
+</properties>
