@@ -56,9 +56,19 @@ public class JkstatusLogger {
 			exceptionList.add(exceptionInConfig.getString("keyword"));
 		}
 		
-		String log = jkstatusParser.getJsonAsString(url, exceptionList);
-		logger.debug(log);
-		elkLogger.trace(log);
+		List<String> logList = jkstatusParser.parse(url, exceptionList);
+		
+		if(logList.size() == 0) {
+			logger.debug("There are no logs.");
+			return;
+		}
+			
+		for(int i = 0 ; i < logList.size() ; i++) {
+			elkLogger.trace(logList.get(i));
+			logger.debug("[" + i + "]" + logList.get(i));
+		}
+		
+		
 	}
 	
 	public static void main(String[] args) {
